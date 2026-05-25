@@ -88,3 +88,15 @@ All images and their associated annotations in DisasterM3 can be used for academ
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=Junjue-Wang/DisasterM3&type=Date)](https://www.star-history.com/#Junjue-Wang/DisasterM3&Date)
+
+
+---
+
+## Unified Multi-Modal Framework Extension (Task 5 & Task 8)
+
+As part of updating the codebase into a clean, modular architecture, I have extracted the dataset logic away from the model execution loops. The code now supports running multiple benchmarks interchangeably via standardized adapters.
+
+### New Structural Components Added:
+* **`datasets/base.py`**: The abstract baseline contract that all datasets must follow.
+* **`datasets/disasterm3.py`**: Concrete adapter designed to safely load and clean the original DisasterM3 JSON targets.
+* **`datasets/monitrs.py`**: (Task 8 Bonus) External dataset adapter implemented to ingest the MONITRS remote sensing benchmark into the ecosystem with zero changes to core code.
