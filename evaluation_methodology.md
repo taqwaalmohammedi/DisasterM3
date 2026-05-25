@@ -1,43 +1,53 @@
-# Evaluation Methodology for Vision-Language Models (VLMs)
+# Evaluation Methodology for Vision-Language Models (VLMs) in DisasterM3
 
-Evaluating Multimodal Vision-Language Models (VLMs) differs significantly from assessing traditional single-modality models (such as pure language or pure vision models). Because VLMs process both visual context (images) and textual context (prompts/questions) simultaneously to produce text-based responses, their evaluation requires specialized frameworks and metrics.
-
----
-
-### 1. Nature of Evaluation Data
-Evaluation datasets for VLMs in disaster analysis typically consist of triplets or structured pairs that test the model's cross-modal reasoning capability:
-* **Visual Inputs:** High-resolution remote sensing imagery, including satellite data (e.g., pre- and post-disaster patches) or drone/UAV aerial captures.
-* **Textual Prompts / Questions:** Ground-truth text inputs that can range from simple open-ended questions (*"What is the damage level of the building in the center?"*) to multiple-choice questions (MCQs) or direct instructions for damage grading.
-* **Ground-Truth Answers:** The expected correct responses, often verified and annotated by human domain experts or GIS professionals.
-
-### 2. Evaluation Frameworks & Paradigms
-VLM evaluation generally follows two main paradigms based on the task structure:
-
-#### A. Discriminative / Closed-Ended Evaluation
-The model is constrained to select from a fixed set of options (e.g., Multiple Choice Questions) or provide binary answers (Yes/No). 
-* **Advantage:** Evaluation is completely objective, deterministic, and easy to automate.
-
-#### B. Generative / Open-Ended Evaluation
-The model generates free-form text responses to describe a scene, assess damage, or answer complex situational questions.
-* **Advantage:** Captures the full reasoning capabilities of the model.
-* **Challenge:** Parsing natural language outputs to match structural truth requires flexible text-matching or LLM-as-a-judge approaches.
+Evaluating Multimodal Vision-Language Models (VLMs) differs significantly from assessing traditional single-modality models. Because VLMs process both visual context (multi-sensor imagery) and textual context (prompts/instructions) simultaneously to produce responses, their evaluation requires specialized multi-tier frameworks. This document outlines general VLM evaluation and maps it directly to the DisasterM3 benchmark infrastructure.
 
 ---
 
-### 3. Key Evaluation Metrics
+## 1. Nature of Evaluation Data & Instruction Pairs
 
-Depending on the specific disaster task, VLMs are evaluated using a combination of the following metrics:
+Evaluation datasets in disaster analysis test cross-modal reasoning using structured tokens or multi-modal triplets:
+* **Visual Inputs:** Multi-sensor imagery combining **Bi-temporal Optical satellite data** (Pre-disaster vs. Post-disaster patches) and **Post-disaster Synthetic Aperture Radar (SAR)** imagery to bypass weather or cloud obstructions.
+* **Textual Instructions / Questions:** Ground-truth text prompts ranging from closed questions to long-form generative requests (e.g., *"How many major damaged buildings are in this disaster?"* or *"Segment the total-destroyed building?"*).
+* **Ground-Truth Targets:** Expected accurate responses, consisting of target classes, exact entity counts, spatial bounding box coordinates, pixel mask identifiers, or expert-annotated text reports.
 
-#### A. Classification & Discriminative Metrics
-Used when the VLM performs tasks like multiple-choice Visual Question Answering (VQA) or macro damage classification:
-* **Accuracy:** The percentage of correctly answered questions or correctly assigned damage classes.
-* **F1-Score / Precision / Recall:** Crucial for disaster analysis because data is often highly imbalanced (e.g., far fewer "destroyed" buildings compared to "undamaged" ones). F1-score ensures the model genuinely performs well across all damage categories.
+---
 
-#### B. Open-Ended Text Generation Metrics
-Used to evaluate free-form text generation by comparing the model's generated text against the expert-annotated ground truth text:
-* **BLEU (Bilingual Evaluation Understudy) & ROUGE:** Measure n-gram overlap between the generated text and the reference answer. Commonly used in open-ended VQA.
-* **METEOR & CIDEr:** Advanced translation and image captioning evaluation metrics that account for synonyms, stemming, and term-frequency weighting, offering a closer match to human judgment.
+## 2. Evaluation Frameworks & Paradigms in DisasterM3
 
-#### C. Remote Sensing & Spatial-Aware Metrics
-In specialized disaster benchmarks, evaluation occasionally measures the model’s adherence to spatial constraints:
-* **IoU (Intersection over Union) / Grounding Accuracy:** When a VLM is asked to locate or "ground" a specific disaster element textually, metrics evaluate how precisely the model’s predicted spatial coordinates or region bounding boxes align with the actual disaster footprint.
+The DisasterM3 framework evaluates model performance across a progressive taxonomy divided into distinct analytical layers:
+
+### A. Recognition (Rec) Layer [Closed-Ended / Discriminative]
+* **Mechanism:** The model answers focused text prompts evaluating macro environmental features (Disaster Type, Scene Recognition, and Bearing Bodies Recognition).
+* **Evaluation Paradigm:** Objective and deterministic mapping where responses are checked against exact nominal categorical strings (e.g., Target: `"Explosion"`).
+
+### B. Counting & Ratio Estimation Layer [Quantitative Deterministic]
+* **Mechanism:** Tasks like **Damaged Building Counting** and **Damaged Road Area Estimation** require the VLM to extract numerical density values from visual frames.
+* **Evaluation Paradigm:** Evaluates exact mathematical proximity to ground truth values (e.g., extracting exact percentages like `"1.99%"` or absolute counts).
+
+### C. Localization & Relational Reasoning Layer [Spatial-Aware Paradigm]
+* **Mechanism:** Includes **Referring Segmentation** and **Damaged Object Relational Reasoning**. The model must understand positional tokens or direct bounding box links (e.g., spatial relations between `#pink box` and `#blue box`).
+* **Evaluation Paradigm:** Measures spatial grounding, ensuring linguistic outputs correctly correlate with physical positions on the map coordinates.
+
+### D. Report Generation Layer [Open-Ended Generative]
+* **Mechanism:** Deep contextual generation tasks including dense **Disaster Description** paragraphs and actionable, long-form **Disaster Restoration Advice** (Immediate vs. Long-term strategies).
+* **Evaluation Paradigm:** Open-ended string parsing to verify logical consistency and linguistic coverage.
+
+---
+
+## 3. Key Evaluation Metrics
+
+Depending on the specific layer of the taxonomy being tested, models in the repository are evaluated using a combination of the following metrics:
+
+### A. Classification & Counting Metrics (Rec & Counting Layers)
+* **Accuracy:** The basic percentage of correctly identified disaster types or land-use categories across the benchmark subsets (e.g., `bearing_body` or `report`).
+* **F1-Score / Precision / Recall:** Critical due to severe data imbalance in disaster areas (e.g., instances of "destroyed buildings" are far rarer than "intact buildings"). F1-score guarantees that the VLM genuinely recognizes heavy damage without being biased by dominant majority classes.
+* **Mean Absolute Error (MAE) / RMSE:** Used specifically to track counting accuracy for isolated structural assets or collapsed building metrics.
+
+### B. Open-Ended Text Generation Metrics (Report Layer)
+* **BLEU & ROUGE:** Measures exact n-gram token overlap between the VLM's generated summary reports and the reference expert-annotated texts.
+* **METEOR & CIDEr:** Advanced translation and image captioning evaluation metrics that leverage synonyms, stemming, and TF-IDF term weighting. This provides a closer match to a human inspector's judgment when evaluating complex paragraphs like "Restoration Advice."
+
+### C. Spatial-Aware & Grounding Metrics (Localization Layer)
+* **Intersection over Union (IoU) / mIoU:** Measures the pixel-level overlap accuracy when evaluating **Referring Segmentation** targets (e.g., tracking the exact shape of a landslide footprint or a flooded road section).
+* **Bounding Box Grounding Accuracy:** Measures how accurately the VLM isolates bounding box coordinate predictions against ground truth spatial grids.
