@@ -1,35 +1,58 @@
-# Computer Vision Tasks in Natural Disaster Analysis
+# Computer Vision and Multi-Modal Tasks in DisasterM3 Analysis
 
-In the context of computer vision and remote sensing, understanding the environment from satellite or drone imagery requires different levels of visual granularity. The three foundational tasks are Image Classification, Object Detection, and Semantic/Instance Segmentation.
-
----
-
-### 1. Image Classification
-* **Definition:** Image classification assigns a single label or category to an entire image based on its overall visual content. It answers the question: *"What is in this image?"*
-* **Application in Natural Disasters:**
-  * **Disaster Detection:** Classifying a satellite scene as either "Flooded" or "Non-Flooded".
-  * **Damage Grading:** Assigning a macro-level tag to an area image, such as "Severe Damage", "Moderate Damage", or "No Damage" after an earthquake.
-
-### 2. Object Detection
-* **Definition:** Object detection goes a step further by identifying the presence of specific objects and locating them within the image using bounding boxes (defined by coordinate points). It answers: *"What objects are where?"*
-* **Application in Natural Disasters:**
-  * **Infrastructure Monitoring:** Detecting and drawing bounding boxes around collapsed bridges, blocked roads, or damaged buildings to help rescue teams map accessible routes.
-  * **Asset Counting:** Counting affected structures, isolated vehicles, or deployed rescue boats in a disaster zone.
-
-### 3. Image Segmentation
-* **Definition:** Segmentation provides pixel-level analysis. Instead of drawing a rough box, it classifies every single pixel in the image into a specific category. 
-  * *Semantic Segmentation:* Groups all pixels belonging to the same class (e.g., all water pixels).
-  * *Instance Segmentation:* Separates individual objects of the same class (e.g., distinguishing Building A from Building B).
-* **Application in Natural Disasters:**
-  * **Flood Extent Mapping:** Precisely delineating the boundary of water bodies to measure the exact square mileage of flooded land.
-  * **Landslide and Wildfire Footprints:** Tracking the exact boundaries of a wildfire burn scar or a landslide path, which is crucial for environmental impact assessment and future risk modeling.
+In the context of remote sensing and disaster management, understanding environment changes requires shifting from traditional computer vision to Vision-Language multi-modal reasoning. This document maps foundational computer vision paradigms directly to the 9 benchmark tasks defined in the official DisasterM3 framework taxonomy.
 
 ---
 
-### Summary of Differences in Disaster Context
+## 1. Image Classification & Scenario Recognition
 
-| Feature | Image Classification | Object Detection | Image Segmentation |
-| :--- | :--- | :--- | :--- |
-| **Granularity** | Image-level (Global) | Region-level (Bounding Box) | Pixel-level (Exact Shape) |
-| **Output Example** | "This entire satellite image shows a flooded region." | "There are 5 damaged buildings detected in this grid." | "These specific 14,500 pixels represent the exact path of the lava flow." |
-| **Computational Complexity** | Low | Medium | High |
+### A. Foundational Concept
+Image classification assigns a global label or category to an entire scene based on macro visual patterns. It answers: *"What is the main event or land-use type?"*
+
+### B. Direct Mapping to DisasterM3 Tasks
+Our framework integrates global and patch-level classification through the following specific multi-modal reasoning tracks shown in the dataset taxonomy:
+* **Disaster Type Recognition:** Identifying the core catastrophic event from post-disaster images (e.g., Question: *"What disaster has happened in this area?"* -> Answer: *"Explosion"*).
+* **Disaster Scene Recognition:** Classifying background environment footprints (e.g., Question: *"What are land-use types in the pre-disaster scene?"* -> Answer: *"Harbor, industrial, and sea"*).
+* **Disaster Bearing Bodies Recognition:** Identifying macro infrastructure systems under threat (e.g., Classifying presence of buildings, roads, or coastal elements).
+
+---
+
+## 2. Object Detection, Counting & Spatial Reasoning
+
+### A. Foundational Concept
+Object detection locates specific target structures using spatial bounding boxes or coordinates, moving from global understanding to region-level assessment (*"What objects are where, and how many?"*).
+
+### B. Direct Mapping to DisasterM3 Tasks
+The dataset expands localized spatial awareness into complex counting and relational evaluation tracks:
+* **Damaged Building Counting:** Identifying and assessing the survival rate of localized structures (e.g., counting intact, major damaged, or total-destroyed buildings).
+* **Damaged Object Relational Reasoning:** Evaluating geometric and contextual relationships between different localized bounding boxes (e.g., analyzing the spatial relation between an object in a `#pink box` and another in a `#blue box`).
+
+---
+
+## 3. Image Segmentation & Pixel-Level Estimation
+
+### A. Foundational Concept
+Segmentation provides the highest level of visual granularity by classifying every single pixel in the image, allowing for precise tracking of irregular boundaries and area ratios.
+
+### B. Direct Mapping to DisasterM3 Tasks
+DisasterM3 utilizes bi-temporal (pre and post-disaster) optical visuals combined with Synthetic Aperture Radar (SAR) to execute precise surface estimation:
+* **Referring Segmentation:** Isolating pixel masks matching natural language prompts (e.g., Segmenting the specific paths of roads covered by debris or completely destroyed building clusters).
+* **Damaged Road Area Estimation:** Calculating exact spatial ratios or damage percentages based on dense pixel analysis (e.g., estimating that exactly `1.99%` of roads are covered by debris).
+
+---
+
+## 4. Advanced Multi-Modal Visual Report Generation
+
+Going beyond standard vision, the final layer combines classification, spatial reasoning, and segmentation insights into long-form linguistic tasks:
+* **Disaster Description:** Generating descriptive paragraphs detailing the exact state of building collapses and road blockages.
+* **Disaster Restoration Advice:** Providing structured immediate and long-term emergency response strategies based on the visual evidence parsed by the VLM.
+
+---
+
+### Framework Alignment Matrix
+
+| Foundational Vision Task | DisasterM3 Taxonomy Level | Example Execution Metric |
+| :---                       | :---                                     |                               :---    |
+| **Image Classification**   | Recognition (Rec) & Damage Grading       | Classification Accuracy / F1-Score    |
+| **Object Detection**       | Counting & Relational Reasoning          | Bounding Box IoU / Object Count Error |
+| **Image Segmentation**     | Referring Segmentation & Area Estimation | Pixel-level mIoU / Ratio Calculations |
